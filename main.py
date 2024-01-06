@@ -1,7 +1,7 @@
 import discord
 from discord import File, Embed, Intents
 from discord.ext import commands
-from PIL import Image, ImageDraw, ImageFont
+from easy_pil import Editor, load_image_async,Font
 import os
 import requests
 from io import BytesIO
@@ -26,21 +26,15 @@ async def on_member_join(member):
         await send_welcome_message(channel, member)
 
 async def send_welcome_message(channel, member):
-    # Create a circular avatar with a banner background
-    # avatar_url = member.avatar
-    # embed = Embed(title="Welcome to our server!", description=f"Hello {member.mention}, welcome to our Discord server!", color=0x00ff00)
-    # embed.set_image(url=avatar_url)
-
-    # Use a banner image as a background
-    # file = File("./welcome_image.png", filename="welcome_image.png")  # replace with your image file
-    # embed.set_thumbnail(url="attachment://bg.jpg")
-
-     # Get the member count after the new member joins
     member_count = len(member.guild.members)
-    welcome_image_path = await generate_welcome_image(member.display_name, member_count, member.avatar)
-    # Create a circular avatar with a banner background
-    avatar_url = member.avatar
-    banner_image_url ="attachment://"+welcome_image_path  # Replace with your banner image URL
+    background =  Editor("bg.jpg")
+    profile_image = await load_image_async(str(member.avatar.url))
+    profile = Editor(profile_image).resize((150, 150)).circle_image()
+    poppins = Font.poppins(size=50,variant = "bold")
+    poppins_small = Font.poppins(size=20,variant = "light")
+    background.paste(profile, (325, 90))
+    background.ell
+
 
     embed = Embed(description=f":tada: Hey {member.mention}, you're the {member_count}th member  :tada:", color=0x00ff00)
 
@@ -55,41 +49,6 @@ async def send_welcome_message(channel, member):
 
     await channel.send(embed=embed)
 
-def generate_welcome_image(username, member_count, avatar_url):
-    # Open the background image
-    background_image = Image.open(IMAGE_PATH)
-    
-    # Use the default font
-    font = DEFAULT_FONT_PATH
-
-    # Create a drawing object
-    draw = ImageDraw.Draw(background_image)
-
-    # Draw the circular profile image in the left corner
-    
-    response = requests.get(avatar_url)
-    print(avatar_url)
-    profile_image = Image.open(BytesIO(response.content))
-
-    # Remove alpha channel before resizing
-    profile_image = profile_image.convert("RGB").resize((100, 100), Image.LANCZOS)
-
-    # Add alpha channel back
-    profile_image.putalpha(255)
-
-    background_image.paste(profile_image, (50, 50), profile_image)
-
-    # Draw welcome text in the center
-    welcome_text = f"Welcome to our server, {username}!\nYou are the {ordinal(member_count)} member."
-    text_width, text_height = draw.textsize(welcome_text, font)
-    text_position = ((background_image.width - text_width) // 2, (background_image.height - text_height) // 2)
-    draw.text(text_position, welcome_text, font=font, fill=TEXT_COLOR)
-
-    # Save the dynamically generated image
-    welcome_image_path = "welcome_image.png"
-    background_image.save(welcome_image_path)
-
-    return welcome_image_path
 
 async def ordinal(number):
     if 10 <= number % 100 <= 20:
