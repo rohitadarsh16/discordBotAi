@@ -14,7 +14,7 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 
 # Constants for image generation
 IMAGE_PATH = "./bg.jpg"
-DEFAULT_FONT_PATH = ImageFont.load_default()  # Use the default font
+# DEFAULT_FONT_PATH = ImageFont.load_default()  # Use the default font
 FONT_SIZE = 20  # Manually specify the font size
 TEXT_COLOR = (255, 255, 255)  # White color
 
@@ -33,21 +33,17 @@ async def send_welcome_message(channel, member):
     poppins = Font.poppins(size=50,variant = "bold")
     poppins_small = Font.poppins(size=20,variant = "light")
     background.paste(profile, (325, 90))
-    background.ell
+    background.ellipse((325,90),150,150 , outline = "white", stroke_width = 5)
+    background.text((400,260),f"WELCOME TO {member.guild.name} ", color = "white", font = poppins, align = "center")
+    background.text((400,325),f"{member.name}#{member.descriminator} ", color = "white", font = poppins_small, align = "center")
 
+    file = File(fp=background.image_bytes, filename="welcome.png")
+    
+    # embed = Embed(description=f":tada: Hey {member.mention}, you're the {member_count}th member  :tada:", color=0x00ff00)
 
-    embed = Embed(description=f":tada: Hey {member.mention}, you're the {member_count}th member  :tada:", color=0x00ff00)
-
-    # Set the circular profile image in the left corner
-    embed.set_thumbnail(url=avatar_url)
-
-    # Set the banner image as the main background
-    embed.set_image(url=banner_image_url)
-
-    # Add a custom message
-    embed.add_field(name="Welcome to our channel!", value="We're glad to have you here.")
-
-    await channel.send(embed=embed)
+    # await channel.send(embed=embed)
+    await channel.send(f":tada: Hey {member.mention}, you're the {member_count}th member  :tada:")
+    await channel.send(file=file)
 
 
 async def ordinal(number):
@@ -69,4 +65,4 @@ async def manual_welcome(ctx):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-bot.run('MTE5Mjg1MzE4NTk1MDQwMDYxMg.GFlNyO.5x1ei2NSkVv0mJhCW6ywXRCHDW1yhyR9Ab24qE')
+bot.run('MTE5Mjg1MzE4NTk1MDQwMDYxMg.Gpp2DV.r7JELrykTzsI4z7elYsa333NZrPU5I74Dda7bI')
