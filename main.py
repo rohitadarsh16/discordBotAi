@@ -30,18 +30,30 @@ async def send_welcome_message(channel, member):
     profile_image = await load_image_async(str(avatar_url))
 
     profile = Editor(profile_image).resize((150, 150)).circle_image()
-    poppins = Font.poppins(size=50,variant = "bold")
+    poppins_size = 38
+    poppins = Font.poppins(size=poppins_size,variant = "bold")
 
     poppins_small = Font.poppins(size=20,variant = "light")
 
-    background.paste(profile, (325, 90))
-    background.ellipse((325,90),150,150, outline= "white", stroke_width=5)
+    background.paste(profile, (50, 40))
+    background.ellipse((50,40),150,150, outline= "white", stroke_width=5)
 
-    background.text((400,260), f"WELCOME TO {member.guild.name}",color="white",font=poppins,align="center")
-    background.text((400,325), f"{member.name}#{member.discriminator}",color="white",font=poppins_small,align="center")
+
+    text_position = (250, 40)  # Shifted towards the top
+
+    background.text(text_position, f"Welcome {member.name}", color="white", font=poppins, align="left")
+    text_position = (text_position[0], text_position[1] + poppins_size + 20)  # Adjusted coordinate
+
+    background.text(text_position, f"to {member.guild.name}", color="white", font=poppins, align="left")
+    text_position = (text_position[0], text_position[1] + poppins_size + 20)  # Adjusted coordinate
+
+    background.text(text_position, f"You're the {await ordinal(member_count)} user", color="white", font=poppins, align="left")
+
+
+
+
     file = File(fp=background.image_bytes, filename="welcome.png")
-    await channel.send(f"Hello {member.mention}! Welcome to {member.guild.name}!")
-    await channel.send(file=file)
+    await channel.send(f":tada: Hey {member.mention}, you're the {member_count}th member on {member.guild.name} :tada:", file=file)
     
 
 
