@@ -14,9 +14,7 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 
 # Constants for image generation
 IMAGE_PATH = "./bg.jpg"
-# DEFAULT_FONT_PATH = ImageFont.load_default()  # Use the default font
-FONT_SIZE = 20  # Manually specify the font size
-TEXT_COLOR = (255, 255, 255)  # White color
+
 
 
 @bot.event
@@ -28,22 +26,23 @@ async def on_member_join(member):
 async def send_welcome_message(channel, member):
     member_count = len(member.guild.members)
     background =  Editor("bg.jpg")
-    profile_image = await load_image_async(str(member.avatar.url))
+    avatar_url = member.display_avatar.url
+    profile_image = await load_image_async(str(avatar_url))
+
     profile = Editor(profile_image).resize((150, 150)).circle_image()
     poppins = Font.poppins(size=50,variant = "bold")
+
     poppins_small = Font.poppins(size=20,variant = "light")
+
     background.paste(profile, (325, 90))
-    background.ellipse((325,90),150,150 , outline = "white", stroke_width = 5)
-    background.text((400,260),f"WELCOME TO {member.guild.name} ", color = "white", font = poppins, align = "center")
-    background.text((400,325),f"{member.name}#{member.descriminator} ", color = "white", font = poppins_small, align = "center")
+    background.ellipse((325,90),150,150, outline= "white", stroke_width=5)
 
+    background.text((400,260), f"WELCOME TO {member.guild.name}",color="white",font=poppins,align="center")
+    background.text((400,325), f"{member.name}#{member.discriminator}",color="white",font=poppins_small,align="center")
     file = File(fp=background.image_bytes, filename="welcome.png")
-    
-    # embed = Embed(description=f":tada: Hey {member.mention}, you're the {member_count}th member  :tada:", color=0x00ff00)
-
-    # await channel.send(embed=embed)
-    await channel.send(f":tada: Hey {member.mention}, you're the {member_count}th member  :tada:")
+    await channel.send(f"Hello {member.mention}! Welcome to {member.guild.name}!")
     await channel.send(file=file)
+    
 
 
 async def ordinal(number):
@@ -65,4 +64,4 @@ async def manual_welcome(ctx):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-bot.run('MTE5Mjg1MzE4NTk1MDQwMDYxMg.Gpp2DV.r7JELrykTzsI4z7elYsa333NZrPU5I74Dda7bI')
+bot.run('MTE5Mjg1MzE4NTk1MDQwMDYxMg.GPMADE.SKwfDp0L06YppghZfbZN_vlGvSWqw_N-Dz9sWU')
