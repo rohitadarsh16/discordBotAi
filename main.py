@@ -75,5 +75,17 @@ async def manual_welcome(ctx):
             await send_welcome_message(channel, dummy_member)
     except Exception as e:
         print(f"An error occurred: {e}")
+@bot.command(name='ban')
+async def manual_welcome(ctx):
+    print("command trigered")
+@bot.command(name='kick')
+async def manual_welcome(ctx):
+    print("command trigered")
+@bot.command(name='mute')
+async def manual_welcome(ctx):
+    print("command trigered")
+@bot.command(name='timeout')
+async def manual_welcome(ctx):
+    print("command trigered")
 
 bot.run('MTE5Mjg1MzE4NTk1MDQwMDYxMg.Ga51g4.VpBaJYhDUy9HchH8v64Q8uUmgAXDII6bES-M_s')
