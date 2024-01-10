@@ -1,6 +1,7 @@
 import discord
 from discord import File, Embed, Intents
 from discord.ext import commands
+from discord import app_commands
 from easy_pil import Editor, load_image_async,Font
 import os
 import requests
@@ -12,7 +13,7 @@ intents.members = True
 intents.messages = True 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
-# Constants for image generation
+
 IMAGE_PATH = "./bg.jpg"
 
 
@@ -75,17 +76,82 @@ async def manual_welcome(ctx):
             await send_welcome_message(channel, dummy_member)
     except Exception as e:
         print(f"An error occurred: {e}")
-@bot.command(name='ban')
-async def manual_welcome(ctx):
-    print("command trigered")
-@bot.command(name='kick')
-async def manual_welcome(ctx):
-    print("command trigered")
-@bot.command(name='mute')
-async def manual_welcome(ctx):
-    print("command trigered")
-@bot.command(name='timeout')
-async def manual_welcome(ctx):
-    print("command trigered")
+@bot.command()
+async def kick(ctx, member : discord.Member, *, reason=None):
+    if reason == None:
+        reason = "No reason provided"
+    await ctx.guild.kick(member)
+    await ctx.send(f"{member} has been kicked for {reason}")
+    
+    
+@bot.command()
+async def ban(ctx, member : discord.Member, *, reason=None):
+    if reason == None:
+        reason = "No reason provided"
+    await ctx.guild.ban(member)
+    await ctx.send(f"{member} has been banned for {reason}")
+    
+@bot.command()
+async def mute(ctx: commands.Context, member: discord.Member, *, reason: str = "") -> discord.Message:
+    is_in_private_messages = ctx.guild is None and isinstance(ctx.author, discord.User)
+    if is_in_private_messages:
+        return await ctx.send('This command cannot be used in private messages')
 
-bot.run('MTE5Mjg1MzE4NTk1MDQwMDYxMg.Ga51g4.VpBaJYhDUy9HchH8v64Q8uUmgAXDII6bES-M_s')
+    has_permission = ctx.author.guild_permissions.manage_channels
+    if not has_permission:
+        return await ctx.send('You do not have permission to use this command')
+
+    is_member_kickable = ctx.author.top_role > member.top_role
+    if not is_member_kickable:
+        return await ctx.send('You cannot mute this member')
+
+    is_in_voice_channel = member.voice is not None and member.voice.channel is not None
+    if not is_in_voice_channel:
+        return await ctx.send('This member is not in a voice channel')
+
+    if reason == "":
+        reason = "No reason provided"
+
+    await member.edit(mute=True, reason=reason)
+
+    embed = discord.Embed(
+        title=f'Mute Report for {member.name}#{member.discriminator}',
+        description=f'{member.mention} has been muted by {ctx.author.mention}',
+        color=discord.Color.red()  # You can change the color as per your preference
+    )
+    embed.add_field(name='Reason', value=reason, inline=False)
+
+    await ctx.send(embed=embed)
+@bot.command()
+async def unmute(ctx : commands.Context, member : discord.Member, *, reason : str = "") -> discord.Message:
+
+    is_in_private_messages = ctx.guild is None and isinstance(ctx.author, discord.User)
+    if is_in_private_messages:
+        return await ctx.send('This command cannot be used in private messages')
+
+    has_permission = ctx.author.guild_permissions.manage_channels
+    if not has_permission:
+        return await ctx.send('You do not have permission to use this command')
+
+    is_member_kickable = ctx.author.top_role > member.top_role
+    if not is_member_kickable:
+        return await ctx.send('You cannot unmute this member')
+
+    is_in_voice_channel = member.voice is not None and member.voice.channel is not None
+    if not is_in_voice_channel:
+        return await ctx.send('This member is not in a voice channel')
+
+    if reason == "":
+        reason = "No reason provided"
+
+    await member.edit(mute=False,reason=reason)
+
+    return await ctx.send(f'unmuted {member.name}#{member.discriminator} for {reason}')
+@bot.command(name='timeout')
+async def timeout(ctx, member : discord.Member, *, reason=None):
+    if reason == None:
+        reason = "No reason provided"
+    await ctx.guild.timeout(member)
+    await ctx.send(f"{member} has been timed out for {reason}")
+
+bot.run('MTE5Mjg1MzE4NTk1MDQwMDYxMg.GRfepO.KcGha4_wZ9iNcK_vvyIFU9albs_i7UOUdCnf2E')
