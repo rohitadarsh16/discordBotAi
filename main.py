@@ -81,7 +81,14 @@ async def kick(ctx, member : discord.Member, *, reason=None):
     if reason == None:
         reason = "No reason provided"
     await ctx.guild.kick(member)
-    await ctx.send(f"{member} has been kicked for {reason}")
+    embed = discord.Embed(
+        title=f'Kicked {member.name}#{member.discriminator}',
+        description=f'{member.mention} has kicked by {ctx.author.mention} for {reason}',
+        color=discord.Color.red()  # You can change the color as per your preference
+    )
+    embed.add_field(name='Reason', value=reason, inline=False)
+
+    await ctx.send(embed=embed)
     
     
 @bot.command()
@@ -89,7 +96,15 @@ async def ban(ctx, member : discord.Member, *, reason=None):
     if reason == None:
         reason = "No reason provided"
     await ctx.guild.ban(member)
-    await ctx.send(f"{member} has been banned for {reason}")
+    embed = discord.Embed(
+        title=f'Banned {member.name}#{member.discriminator}',
+        description=f'{member.mention} has banned by {ctx.author.mention} for {reason}',
+        color=discord.Color.red()  # You can change the color as per your preference
+    )
+    embed.add_field(name='Reason', value=reason, inline=False)
+
+    await ctx.send(embed=embed)
+    
     
 @bot.command()
 async def mute(ctx: commands.Context, member: discord.Member, *, reason: str = "") -> discord.Message:
@@ -122,9 +137,9 @@ async def mute(ctx: commands.Context, member: discord.Member, *, reason: str = "
     embed.add_field(name='Reason', value=reason, inline=False)
 
     await ctx.send(embed=embed)
+    
 @bot.command()
-async def unmute(ctx : commands.Context, member : discord.Member, *, reason : str = "") -> discord.Message:
-
+async def unmute(ctx: commands.Context, member: discord.Member, *, reason: str = "") -> discord.Message:
     is_in_private_messages = ctx.guild is None and isinstance(ctx.author, discord.User)
     if is_in_private_messages:
         return await ctx.send('This command cannot be used in private messages')
@@ -144,9 +159,17 @@ async def unmute(ctx : commands.Context, member : discord.Member, *, reason : st
     if reason == "":
         reason = "No reason provided"
 
-    await member.edit(mute=False,reason=reason)
+    await member.edit(mute=False, reason=reason)
 
-    return await ctx.send(f'unmuted {member.name}#{member.discriminator} for {reason}')
+    embed = discord.Embed(
+        title=f'Unmute Report for {member.name}#{member.discriminator}',
+        description=f'{member.mention} has been unmuted by {ctx.author.mention}',
+        color=discord.Color.green()  # You can change the color as per your preference
+    )
+    embed.add_field(name='Reason', value=reason, inline=False)
+
+    await ctx.send(embed=embed)
+    
 @bot.command(name='timeout')
 async def timeout(ctx, member : discord.Member, *, reason=None):
     if reason == None:
