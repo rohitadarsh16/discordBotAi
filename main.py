@@ -16,13 +16,48 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 
 IMAGE_PATH = "./bg.jpg"
 
+badWordList = ['Motherfucker', 'fuck','Dog']
+
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return  
+    content_lower = message.content.lower()
+    
+    for bad_word in badWordList:
+        if bad_word.lower() in content_lower:
+            await message.channel.set_permissions(message.guild.default_role, send_messages=False)
+            embed = discord.Embed(
+                title="Inappropriate Language Detected",
+                description=f"{message.author.mention}, the use of inappropriate language is not allowed. The text channel has been muted.",
+                color=discord.Color.red()
+            )
+            await message.channel.send(embed=embed)
+            return
+
+    await bot.process_commands(message)  # Continue processing other commands and events
 
 
 @bot.event
 async def on_member_join(member):
-    channel = member.guild.system_channel
-    if channel is not None:
-        await send_welcome_message(channel, member)
+    # channel = member.guild.system_channel
+    # print(channel)
+    # if channel is not None:
+    #     await send_welcome_message(channel, member)
+    try:
+        # Iterate through channels in the guild
+        for channel in member.guild.channels:
+            # Check if the bot has permission to send messages in the channel
+            if isinstance(channel, discord.TextChannel) and channel.permissions_for(member.guild.me).send_messages:
+                print(f"Sending welcome message to {member.name} in channel {channel.name}")
+                await send_welcome_message(channel, member)
+                break  # Stop iterating once a channel with permissions is found
+        else:
+            print("No channel found with permission to send messages.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        
+    
 
 async def send_welcome_message(channel, member):
     member_count = len(member.guild.members)
@@ -54,6 +89,7 @@ async def send_welcome_message(channel, member):
 
 
     file = File(fp=background.image_bytes, filename="welcome.png")
+    print(channel)
     await channel.send(f":tada: Hey {member.mention}, you're the {member_count}th member on {member.guild.name} :tada:", file=file)
     
 
@@ -65,15 +101,30 @@ async def ordinal(number):
         suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(number % 10, 'th')
     return f"{number}{suffix}"
 
+# @bot.command(name='welcome')
+# async def manual_welcome(ctx):
+#     print(f"Received manual welcome command f")
+#     try:
+#         channel = ctx.guild.system_channel
+#         if channel is not None:
+#             print(f"Sending welcome message to {ctx.author.name}")
+#             dummy_member = ctx.author
+#             await send_welcome_message(channel, dummy_member)
+#     except Exception as e:
+#         print(f"An error occurred: {e}")
+
 @bot.command(name='welcome')
 async def manual_welcome(ctx):
-    print(f"Received manual welcome command f")
+    print(f"Received manual welcome command")
     try:
-        channel = ctx.guild.system_channel
-        if channel is not None:
-            print(f"Sending welcome message to {ctx.author.name}")
-            dummy_member = ctx.author
-            await send_welcome_message(channel, dummy_member)
+        for channel in ctx.guild.channels:
+            if isinstance(channel, discord.TextChannel) and channel.permissions_for(ctx.guild.me).send_messages:
+                print(f"Sending welcome message to {ctx.author.name} in channel {channel.name}")
+                dummy_member = ctx.author
+                await send_welcome_message(channel, dummy_member)
+                break  
+        else:
+            print("No channel found with permission to send messages.")
     except Exception as e:
         print(f"An error occurred: {e}")
 @bot.command()
@@ -137,10 +188,23 @@ async def mute(ctx: commands.Context, member: discord.Member, *, reason: str = "
     embed.add_field(name='Reason', value=reason, inline=False)
 
     await ctx.send(embed=embed)
-    
+
+@bot.command('unmuteText')
+async def unmuteText(ctx, member : discord.Member, *, reason=None):
+    await ctx.channel.set_permissions(ctx.guild.default_role, send_messages=True)
+    embed = discord.Embed(
+    title=f'Unmute Report for {member.name}#{member.discriminator}',
+    description=f'{member.mention} has been unmuted by {ctx.author.mention}',
+    color=discord.Color.green()  # You can change the color as per your preference
+    )
+    embed.add_field(name='Reason', value=reason, inline=False)
+
+    return await ctx.send(embed=embed)
+
 @bot.command()
 async def unmute(ctx: commands.Context, member: discord.Member, *, reason: str = "") -> discord.Message:
     is_in_private_messages = ctx.guild is None and isinstance(ctx.author, discord.User)
+   
     if is_in_private_messages:
         return await ctx.send('This command cannot be used in private messages')
 
@@ -158,9 +222,7 @@ async def unmute(ctx: commands.Context, member: discord.Member, *, reason: str =
 
     if reason == "":
         reason = "No reason provided"
-
     await member.edit(mute=False, reason=reason)
-
     embed = discord.Embed(
         title=f'Unmute Report for {member.name}#{member.discriminator}',
         description=f'{member.mention} has been unmuted by {ctx.author.mention}',
