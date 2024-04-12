@@ -6,6 +6,24 @@ from easy_pil import Editor, load_image_async,Font
 import os
 import requests
 from io import BytesIO
+import time
+
+import datetime
+
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
+
+uri = "mongodb+srv://darakhsharayen9:darakhsha01@cluster0.kpldfgg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+client = MongoClient(uri, server_api=ServerApi('1'), tls=True, tlsAllowInvalidCertificates=True)
+
+
+# Send a ping to confirm a successful connection
+
+db = client.discord
+users = db.users
+banusers = db.banusers
+kickuser = db.kickuser
+# mostusedphrases = db.mostusedphrases
 
 
 intents = discord.Intents.all()
@@ -33,6 +51,7 @@ async def on_message(message):
                 color=discord.Color.red()
             )
             await message.channel.send(embed=embed)
+            banusers.insert({"_id": member.id, "name": member.name, "guild": member.guild.name, 'message': content_lower , 'created_at': currentTime})
             return
 
     await bot.process_commands(message)  # Continue processing other commands and events
@@ -51,6 +70,9 @@ async def on_member_join(member):
             if isinstance(channel, discord.TextChannel) and channel.permissions_for(member.guild.me).send_messages:
                 print(f"Sending welcome message to {member.name} in channel {channel.name}")
                 await send_welcome_message(channel, member)
+                currentTime = time.time()
+                
+                users.insert_one({"_id": member.id, "name": member.name, "guild": member.guild.name, 'created_at': currentTime})
                 break  # Stop iterating once a channel with permissions is found
         else:
             print("No channel found with permission to send messages.")
@@ -239,4 +261,36 @@ async def timeout(ctx, member : discord.Member, *, reason=None):
     await ctx.guild.timeout(member)
     await ctx.send(f"{member} has been timed out for {reason}")
 
-bot.run('MTE5Mjg1MzE4NTk1MDQwMDYxMg.GRfepO.KcGha4_wZ9iNcK_vvyIFU9albs_i7UOUdCnf2E')
+@bot.command(name='kickk')
+async def kickk(ctx, member : discord.Member, *, reason=None):
+    if reason == None:
+        reason = "No reason provided"
+    await ctx.guild.kick(member)
+    embed = discord.Embed(
+        title=f'Kicked {member.name}#{member.discriminator}',
+        description=f'{member.mention} has kicked by {ctx.author.mention} for {reason}',
+        color=discord.Color.red()  # You can change the color as per your preference
+    )
+    embed.add_field(name='Reason', value=reason, inline=False)
+    currentTime = time.time()
+    kickuser.insert_one({"_id": member.id, "name": member.name, "guild": member.guild.name, 'created_at': currentTime})
+    await ctx.send(embed=embed)
+
+@bot.command(name='helpp')
+async def helpp(ctx):
+    embed = discord.Embed(
+        title="Help made by FGITIANS.  darakhsha , chhaya  and shaumya",
+        description="List of available commands",
+        color=discord.Color.blue()
+    )
+
+    embed.add_field(name="!kick", value="Kicks a member from the server", inline=False)
+    embed.add_field(name="!ban", value="Bans a member from the server", inline=False)
+    embed.add_field(name="!mute", value="Mutes a member", inline=False)
+    embed.add_field(name="!unmute", value="Unmutes a member", inline=False)
+    embed.add_field(name="!timeout", value="Timeout a member", inline=False)
+    embed.add_field(name="!welcome", value="Sends a welcome message to the latest member", inline=False)
+    embed.add_field(name="!unmuteText", value="Unmutes a member", inline=False)
+    await ctx.send(embed=embed)
+
+bot.run('MTIyMDc4NTcxNTYzMDMwOTQ0Ng.GLyNrl.Lx1S5ebYVVuY0QoL7inXgevYKB8fUg-xPu6n_c')
